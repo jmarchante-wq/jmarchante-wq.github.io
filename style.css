@@ -1,16 +1,20 @@
 /* ═══════════════════════════════════════════
    VARIABLES & RESET
 ═══════════════════════════════════════════ */
+
+/* ── Light mode (default) ── */
 :root {
-  --bg:           #0a0e14;
-  --bg-surface:   #111720;
-  --bg-card:      #161d28;
-  --border:       #1e2a38;
-  --accent:       #4ecdc4;
-  --accent-dim:   #2a7a75;
-  --text-primary: #e8edf2;
-  --text-secondary: #8a9ab0;
-  --text-muted:   #4a5a6e;
+  --bg:             #f2f0eb;
+  --bg-surface:     #e8e5de;
+  --bg-card:        #edeae3;
+  --border:         #ccc8be;
+  --accent:         #1a8a82;
+  --accent-dim:     #5ab8b1;
+  --text-primary:   #1a1f2e;
+  --text-secondary: #4a5568;
+  --text-muted:     #8a9ab0;
+
+  --shadow: 0 2px 12px rgba(0,0,0,0.07);
 
   --font-display: 'DM Serif Display', Georgia, serif;
   --font-body:    'IBM Plex Sans', sans-serif;
@@ -18,6 +22,21 @@
 
   --section-pad: 7rem 2rem;
   --max-width: 1100px;
+}
+
+/* ── Dark mode ── */
+html.dark {
+  --bg:             #0a0e14;
+  --bg-surface:     #111720;
+  --bg-card:        #161d28;
+  --border:         #1e2a38;
+  --accent:         #4ecdc4;
+  --accent-dim:     #2a7a75;
+  --text-primary:   #e8edf2;
+  --text-secondary: #8a9ab0;
+  --text-muted:     #4a5a6e;
+
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 
 *, *::before, *::after {
@@ -37,6 +56,7 @@ body {
   font-size: 16px;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -88,6 +108,34 @@ a:hover { opacity: 0.75; }
   color: var(--accent);
   opacity: 1;
 }
+
+/* ── Theme toggle button ── */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.theme-toggle .icon-sun  { display: none; }
+.theme-toggle .icon-moon { display: inline; }
+
+html.dark .theme-toggle .icon-sun  { display: inline; }
+html.dark .theme-toggle .icon-moon { display: none; }
 
 /* ═══════════════════════════════════════════
    SECTION SHARED
@@ -145,7 +193,7 @@ h2 em {
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 60px 60px;
-  opacity: 0.3;
+  opacity: 0.5;
   pointer-events: none;
 }
 

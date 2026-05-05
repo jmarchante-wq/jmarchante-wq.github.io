@@ -5,6 +5,23 @@
 //  target container ID in index.html.
 // ═══════════════════════════════════════════
 
+// ── Theme toggle ──
+const html = document.documentElement;
+const toggleBtn = document.getElementById('theme-toggle');
+const toggleLabel = toggleBtn.querySelector('.toggle-label');
+
+// Restore saved preference
+if (localStorage.getItem('theme') === 'dark') {
+  html.classList.add('dark');
+  toggleLabel.textContent = 'light';
+}
+
+toggleBtn.addEventListener('click', () => {
+  const isDark = html.classList.toggle('dark');
+  toggleLabel.textContent = isDark ? 'light' : 'dark';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
 // ── Navbar: add scrolled class for styling ──
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
