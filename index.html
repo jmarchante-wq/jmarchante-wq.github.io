@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>João Marchante — Drug Discovery Scientist</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+
+  <!-- D3 -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── NAVIGATION ─── -->
+  <nav id="navbar">
+    <div class="nav-logo">JM</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#expertise">Expertise</a></li>
+      <li><a href="#cases">Cases</a></li>
+      <li><a href="#cv">CV</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ─── HERO ─── -->
+  <section id="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow">Senior Scientist · Drug Discovery</p>
+      <h1 class="hero-title">João<br /><em>Marchante</em></h1>
+      <p class="hero-sub">
+        15 years building the science that turns hypotheses into clinical assets —
+        from assay design to translational pharmacology,
+        with a data-first mindset throughout.
+      </p>
+      <a href="#about" class="hero-cta">Explore work ↓</a>
+    </div>
+    <div class="hero-visual" id="hero-chart">
+      <!-- D3 hero animation will go here -->
+      <div class="chart-placeholder">
+        <span class="placeholder-label">[ visualisation coming soon ]</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ABOUT ─── -->
+  <section id="about">
+    <div class="section-label">01 — About</div>
+    <div class="about-grid">
+      <div class="about-text">
+        <h2>Science as a craft,<br /><em>data as a language.</em></h2>
+        <p>
+          I am a drug discovery scientist with deep expertise in in vitro pharmacology,
+          assay development, and translational biology. At iTeos Therapeutics I founded
+          both the Screening &amp; Assay Development team and the bioinformatics function —
+          building capabilities that supported multiple assets from early discovery
+          through to the clinic.
+        </p>
+        <p>
+          My edge is the full stack: I can design an assay, run a screen, analyse the
+          output computationally, and speak the same language as the clinician reviewing
+          the Phase I data. That span is rare, and it tends to matter most at inflection
+          points — when a programme needs direction, not just execution.
+        </p>
+        <p>
+          I am based in Brussels and open to senior roles across Europe in oncology,
+          immuno-oncology, or any disease area where rigorous in vitro biology meets
+          ambitious translational thinking.
+        </p>
+      </div>
+      <div class="about-stats">
+        <div class="stat">
+          <span class="stat-number">15</span>
+          <span class="stat-label">years in preclinical<br />drug discovery</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">5+</span>
+          <span class="stat-label">assets to clinical or<br />late preclinical</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">2</span>
+          <span class="stat-label">functions founded<br />from scratch</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">5</span>
+          <span class="stat-label">peer-reviewed<br />publications</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── EXPERTISE ─── -->
+  <section id="expertise">
+    <div class="section-label">02 — Expertise</div>
+    <h2>What I bring<br /><em>to a programme.</em></h2>
+    <div class="expertise-grid">
+
+      <div class="expertise-card">
+        <div class="card-number">01</div>
+        <h3>In Vitro Pharmacology</h3>
+        <p>Full-stack assay development across biochemical and cell-based formats:
+          cAMP, calcium flux, HTRF, TR-FRET, AlphaLISA, FP, MSD, HCI, flow cytometry,
+          3D culture models. From concept to validated, transferable assay package.</p>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-number">02</div>
+        <h3>Screening &amp; Hit-Finding</h3>
+        <p>HTS campaign design, cascade architecture, hit confirmation and
+          triage. Experience across small molecules, biologics, and combination
+          approaches in immuno-oncology.</p>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-number">03</div>
+        <h3>Bioinformatics &amp; Data Science</h3>
+        <p>Built a bioinformatics function from zero. Proficient in R, data
+          visualisation, genomic data integration, and building evidence
+          frameworks that connect target biology to clinical hypothesis.</p>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-number">04</div>
+        <h3>Translational Interface</h3>
+        <p>NCRs, investigator brochures, lab manuals, PK/PD analysis for
+          Phase I trials. Comfortable translating between bench findings and
+          the clinical development team.</p>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-number">05</div>
+        <h3>Team &amp; Function Building</h3>
+        <p>Founded and led the Screening &amp; Assay Development team at iTeos.
+          Experience hiring, mentoring, and building operating models for
+          early-stage discovery functions.</p>
+      </div>
+
+      <div class="expertise-card">
+        <div class="card-number">06</div>
+        <h3>CRO Management</h3>
+        <p>External collaboration oversight: vendor selection, scope definition,
+          data quality review, and integrating CRO outputs into internal
+          decision-making frameworks.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── CASE STUDIES ─── -->
+  <section id="cases">
+    <div class="section-label">03 — Case Studies</div>
+    <h2>Work in detail.<br /><em>Data tells the story.</em></h2>
+
+    <!-- Case 1: DR Curves -->
+    <div class="case">
+      <div class="case-header">
+        <div class="case-meta">
+          <span class="case-tag">Pharmacology</span>
+          <span class="case-tag">Interactivity</span>
+        </div>
+        <h3>Dose–Response Characterisation</h3>
+        <p class="case-description">
+          Hover over any curve to read EC₅₀ and maximum activity at that point.
+          A core output of in vitro pharmacology — the language in which compounds
+          speak before they become candidates.
+        </p>
+      </div>
+      <div class="case-visual" id="dr-curve-chart">
+        <div class="chart-placeholder">
+          <span class="placeholder-label">[ D3 dose–response curves · in progress ]</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Case 2: Screening Cascade -->
+    <div class="case">
+      <div class="case-header">
+        <div class="case-meta">
+          <span class="case-tag">HTS</span>
+          <span class="case-tag">Strategy</span>
+        </div>
+        <h3>Screening Cascade Architecture</h3>
+        <p class="case-description">
+          From library to lead: how a well-designed cascade reduces noise
+          and surfaces genuine biology. An anonymised funnel from a real campaign.
+        </p>
+      </div>
+      <div class="case-visual" id="cascade-chart">
+        <div class="chart-placeholder">
+          <span class="placeholder-label">[ D3 screening funnel · in progress ]</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Case 3: Asset Timeline -->
+    <div class="case">
+      <div class="case-header">
+        <div class="case-meta">
+          <span class="case-tag">Portfolio</span>
+          <span class="case-tag">Translational</span>
+        </div>
+        <h3>Programme Timeline</h3>
+        <p class="case-description">
+          Key programmes I contributed to, mapped from target identification
+          to clinical entry. Each node marks a decision point or milestone.
+        </p>
+      </div>
+      <div class="case-visual" id="timeline-chart">
+        <div class="chart-placeholder">
+          <span class="placeholder-label">[ D3 programme timeline · in progress ]</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── CV ─── -->
+  <section id="cv">
+    <div class="section-label">04 — CV</div>
+    <h2>Experience &amp;<br /><em>background.</em></h2>
+
+    <div class="cv-grid">
+
+      <div class="cv-column">
+        <h4 class="cv-col-title">Experience</h4>
+
+        <div class="cv-entry">
+          <div class="cv-period">2015 — 2024</div>
+          <div class="cv-role">Senior Scientist &amp; Screening Lead</div>
+          <div class="cv-org">iTeos Therapeutics · Belgium</div>
+          <p class="cv-detail">
+            Founded Screening &amp; Assay Development team and the bioinformatics
+            function. Contributed to multiple assets reaching clinical or late
+            preclinical development across oncology and immuno-oncology.
+          </p>
+        </div>
+
+        <div class="cv-entry">
+          <div class="cv-period">Ongoing</div>
+          <div class="cv-role">Grant Evaluator</div>
+          <div class="cv-org">European Commission</div>
+          <p class="cv-detail">
+            Review and evaluate research grant applications in life sciences
+            for EU funding programmes.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="cv-column">
+        <h4 class="cv-col-title">Education</h4>
+
+        <div class="cv-entry">
+          <div class="cv-period">5 years research</div>
+          <div class="cv-role">Doctoral Research</div>
+          <div class="cv-org">Erasmus MC · Rotterdam</div>
+          <p class="cv-detail">
+            Five years of doctoral research resulting in five peer-reviewed
+            publications. Research conducted; thesis not defended.
+          </p>
+        </div>
+
+        <h4 class="cv-col-title" style="margin-top: 2.5rem;">Technologies</h4>
+        <div class="tech-list">
+          <span class="tech-tag">cAMP / Ca²⁺ flux</span>
+          <span class="tech-tag">HTRF / TR-FRET</span>
+          <span class="tech-tag">AlphaLISA</span>
+          <span class="tech-tag">MSD</span>
+          <span class="tech-tag">HCI</span>
+          <span class="tech-tag">Flow cytometry</span>
+          <span class="tech-tag">3D culture</span>
+          <span class="tech-tag">R / tidyverse</span>
+          <span class="tech-tag">D3.js</span>
+          <span class="tech-tag">Bioinformatics</span>
+          <span class="tech-tag">PK/PD analysis</span>
+          <span class="tech-tag">CRO management</span>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── CONTACT ─── -->
+  <section id="contact">
+    <div class="section-label">05 — Contact</div>
+    <div class="contact-inner">
+      <h2>Let's talk<br /><em>science.</em></h2>
+      <p class="contact-sub">
+        Open to senior roles in drug discovery across Europe.<br />
+        Oncology, immuno-oncology, metabolic disease — wherever
+        rigorous in vitro biology meets translational ambition.
+      </p>
+      <div class="contact-links">
+        <a href="mailto:your@email.com" class="contact-link">your@email.com</a>
+        <a href="https://linkedin.com/in/yourprofile" class="contact-link" target="_blank">LinkedIn →</a>
+        <a href="https://github.com/jmarchante-wq" class="contact-link" target="_blank">GitHub →</a>
+      </div>
+      <p class="contact-location">📍 Brussels, Belgium</p>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <span>© 2025 João Marchante</span>
+    <span>Built with D3.js · Hosted on GitHub Pages</span>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
