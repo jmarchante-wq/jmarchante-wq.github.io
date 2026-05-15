@@ -536,6 +536,129 @@ h2 em {
 }
 
 /* ═══════════════════════════════════════════
+   STAT — CLICKABLE VARIANT
+═══════════════════════════════════════════ */
+a.stat-link {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+a.stat-link:hover {
+  border-color: var(--accent);
+  background: var(--bg-surface);
+  opacity: 1;
+}
+
+.stat-cta {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--accent-dim);
+  letter-spacing: 0.08em;
+  margin-top: 0.6rem;
+  transition: color 0.2s;
+}
+
+a.stat-link:hover .stat-cta {
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════
+   PUBLICATIONS
+═══════════════════════════════════════════ */
+#publications {
+  border-bottom: 1px solid var(--border);
+}
+
+.pub-list {
+  list-style: none;
+}
+
+.pub-entry {
+  display: flex;
+  gap: 1.8rem;
+  align-items: flex-start;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pub-entry:last-child {
+  border-bottom: none;
+}
+
+.pub-counter {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent-dim);
+  letter-spacing: 0.1em;
+  padding-top: 0.3rem;
+  min-width: 1.8rem;
+  flex-shrink: 0;
+}
+
+.pub-body {
+  flex: 1;
+}
+
+.pub-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1.45;
+  margin-bottom: 0.5rem;
+}
+
+.pub-title a {
+  color: var(--text-primary);
+  transition: color 0.2s;
+}
+
+.pub-title a:hover {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.pub-authors {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 300;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.pub-authors strong {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.pub-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.pub-journal {
+  font-style: italic;
+}
+
+.pub-badge {
+  font-size: 0.62rem;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  padding: 0.1rem 0.5rem;
+  border-radius: 2px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-style: normal;
+}
+
+/* ═══════════════════════════════════════════
    CONTACT
 ═══════════════════════════════════════════ */
 #contact {

@@ -54,7 +54,7 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.expertise-card, .case, .stat, .cv-entry').forEach(el => {
+document.querySelectorAll('.expertise-card, .case, .stat, .cv-entry, .pub-entry').forEach(el => {
   el.classList.add('reveal');
   revealObserver.observe(el);
 });
