@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img">
+  <title>JM — João Marchante</title>
+  <circle cx="60" cy="60" r="56" fill="#1a8a82"/>
+  <text
+    x="60" y="76"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="46"
+    font-weight="400"
+    letter-spacing="3"
+    fill="#e1f5ee">JM</text>
+</svg>
