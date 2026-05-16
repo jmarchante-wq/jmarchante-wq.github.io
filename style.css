@@ -647,6 +647,50 @@ a.stat-link:hover .stat-cta {
   font-style: italic;
 }
 
+/* ── Collapsible overflow ── */
+.pub-overflow {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+
+.pub-overflow.expanded {
+  max-height: 4000px;
+  transition: max-height 0.7s ease;
+}
+
+.pub-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.8rem;
+  background: none;
+  border: 1px solid var(--accent-dim);
+  border-radius: 2px;
+  padding: 0.6rem 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.pub-toggle:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.pub-toggle-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.pub-toggle.expanded .pub-toggle-arrow {
+  transform: rotate(180deg);
+}
+
 .pub-badge {
   font-size: 0.62rem;
   color: var(--accent);

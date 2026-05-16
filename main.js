@@ -60,6 +60,19 @@ document.querySelectorAll('.expertise-card, .case, .stat, .cv-entry, .pub-entry'
 });
 
 
+// ── Publications: collapsible toggle ──
+const pubToggle   = document.getElementById('pub-toggle');
+const pubOverflow = document.getElementById('pub-overflow');
+
+if (pubToggle && pubOverflow) {
+  pubToggle.addEventListener('click', () => {
+    const expanded = pubOverflow.classList.toggle('expanded');
+    pubToggle.classList.toggle('expanded', expanded);
+    pubToggle.querySelector('.pub-toggle-text').textContent = expanded ? 'Show less' : 'Show 5 more';
+  });
+}
+
+
 // ═══════════════════════════════════════════
 //  D3 VISUALISATIONS
 //  Uncomment and fill in as you build them.
