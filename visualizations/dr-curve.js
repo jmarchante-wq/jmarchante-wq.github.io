@@ -1,88 +1,127 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  dr-curve.js  —  A2AR antagonist competitive profiling
-//  Two-tab D3 v7 visualisation for #dr-curve-chart
+//  Three D3 v7 charts:
+//    #dr-curve-chart  — DR curves, two tabs (Low ADO / Tumor-like)
+//    #ado-chart       — IC50 vs [ADO] in human CD3+ T cells
 // ─────────────────────────────────────────────────────────────────────────────
 
 (function () {
   'use strict';
 
-  // ── Data ───────────────────────────────────────────────────────────────────
-
-  // Tab 1: Dose–response in low-adenosine conditions
-  // EC50 in nM, derived from published cell-based assay data
-  const drCompounds = [
-    { name: 'Inupadenant (iTeos)', ec50: 0.063, hill: 1.2, emax: 100, color: '#1a8a82', weight: 2.5, dash: null },
-    { name: 'Preladenant',          ec50: 1.0,   hill: 1.0, emax: 100, color: '#6366f1', weight: 1.5, dash: '6,3' },
-    { name: 'Istradefylline',        ec50: 10,    hill: 0.9, emax: 100, color: '#f59e0b', weight: 1.5, dash: '4,4' },
-    { name: 'CPI-444',               ec50: 100,   hill: 0.9, emax: 100, color: '#ef4444', weight: 1.5, dash: '8,3' },
-    { name: 'AZD-4635',              ec50: 600,   hill: 0.9, emax: 100, color: '#a855f7', weight: 1.5, dash: '3,3' },
+  // ── Compound definitions ──────────────────────────────────────────────────
+  // EC50 in nM; HEK-hA2AR cell-based cAMP assay
+  // Arcus values provided; iTeos/Corvus/AZ read from published figures
+  const COMPOUNDS = [
+    { id: 'iteos',  name: 'Inupadenant (iTeos)', color: '#1a8a82', weight: 2.5, ec50Low: 0.063, ec50Tumor: 3      },
+    { id: 'arcus',  name: 'AB928 (Arcus)',        color: '#e53e3e', weight: 1.5, ec50Low: 1.44,  ec50Tumor: 4200   },
+    { id: 'corvus', name: 'CPI-444 (Corvus)',     color: '#38a169', weight: 1.5, ec50Low: 100,   ec50Tumor: 5000   },
+    { id: 'az',     name: 'AZD-4635 (AZ)',        color: '#805ad5', weight: 1.5, ec50Low: 600,   ec50Tumor: 30000  },
   ];
 
-  // Tab 2: IC₅₀ vs [Adenosine] — low serum (solid) vs tumour (dashed)
-  // IC50 in nM at each [ADO] in µM; values from Image 1 (inverted y, lower = more potent)
-  const adoConc = [1, 3, 10, 100]; // µM
-  const competCompounds = [
-    {
-      name: 'Inupadenant (iTeos)', color: '#1a8a82', weight: 2.5,
-      lowSerum: [0.07, 0.08, 0.08, 0.06],
-      tumor:    [3.0,  4.0,  4.5,  5.0],
-    },
-    {
-      name: 'Etrumadenant', color: '#6366f1', weight: 1.5,
-      lowSerum: [0.30, 0.50, 0.70, 0.70],
-      tumor:    [3.0,  15,   80,   600],
-    },
-    {
-      name: 'Ciforadenant', color: '#38a169', weight: 1.5,
-      lowSerum: [3.0,  7.0,  20,   80],
-      tumor:    [400,  2000, 8000, 80000],
-    },
-    {
-      name: 'Imaradenant', color: '#d97706', weight: 1.5,
-      lowSerum: [3.0,  8.0,  25,   100],
-      tumor:    [100,  400,  2000, 10000],
-    },
+  // ── CD3 assay data ────────────────────────────────────────────────────────
+  // IC50 (nM) vs [ADO] (µM); human CD3+ T cell cAMP assay, tumour-like conditions
+  const CD3_DATA = [
+    { id: 'iteos',  name: 'Inupadenant (iTeos)', color: '#1a8a82', weight: 2.5,
+      pts: [{ x: 1, y: 0.4 }, { x: 10, y: 0.4 }, { x: 100, y: 0.5 }] },
+    { id: 'arcus',  name: 'AB928 (Arcus)',        color: '#e53e3e', weight: 1.5,
+      pts: [{ x: 1, y: 0.4 }, { x: 10, y: 30  }, { x: 100, y: 1500 }] },
+    { id: 'corvus', name: 'CPI-444 (Corvus)',     color: '#38a169', weight: 1.5,
+      pts: [{ x: 1, y: 300 }, { x: 5, y: 1200 }, { x: 25, y: 40000 }, { x: 100, y: 100000 }] },
+    { id: 'az',     name: 'AZD-4635 (AZ)',        color: '#805ad5', weight: 1.5,
+      pts: [{ x: 1, y: 150 }, { x: 5, y: 400  }, { x: 25, y: 1500  }, { x: 100, y: 12000  }] },
   ];
 
-  // ── Bootstrap ──────────────────────────────────────────────────────────────
+  // ── Hill equation ─────────────────────────────────────────────────────────
+  function hill(x, ec50, emax) {
+    return emax * x / (ec50 + x);  // hill = 1 for all compounds
+  }
 
-  function init() {
-    const container = document.getElementById('dr-curve-chart');
-    if (!container || typeof d3 === 'undefined') return;
+  // ── Format nM ─────────────────────────────────────────────────────────────
+  function fmtNM(v) {
+    if (v < 0.01)   return v.toExponential(1) + ' nM';
+    if (v < 0.1)    return v.toFixed(3) + ' nM';
+    if (v < 1)      return v.toFixed(2) + ' nM';
+    if (v < 10)     return v.toFixed(1) + ' nM';
+    if (v < 1000)   return Math.round(v) + ' nM';
+    if (v < 10000)  return (v / 1000).toFixed(1) + ' µM';
+    return (v / 1000).toFixed(0) + ' µM';
+  }
 
+  // ── Shared axis styler ────────────────────────────────────────────────────
+  function styleAxis(sel) {
+    sel.select('.domain').attr('stroke', 'var(--border)');
+    sel.selectAll('.tick line').attr('stroke', 'var(--border)');
+    sel.selectAll('.tick text')
+      .style('font-family', "'IBM Plex Mono', monospace")
+      .style('font-size', '10px')
+      .attr('fill', 'var(--text-muted)');
+  }
+
+  function gridLines(parent) {
+    return parent.append('g').call(function (g) {
+      g.selectAll('line').attr('stroke', 'var(--border)').attr('stroke-dasharray', '2,3').attr('opacity', 0.5);
+      g.select('.domain').remove();
+    });
+  }
+
+  // ── Tooltip helper ────────────────────────────────────────────────────────
+  function makeTipFn(container, svgWrap, margin) {
+    const tooltip = container.querySelector('.chart-tooltip');
+    return {
+      show(html, mx, my) {
+        tooltip.innerHTML = html;
+        tooltip.style.opacity = '1';
+        const cR = container.getBoundingClientRect();
+        const wR = svgWrap.getBoundingClientRect();
+        const tx = wR.left - cR.left + margin.left + mx;
+        const ty = wR.top  - cR.top  + margin.top  + my;
+        const tw = tooltip.offsetWidth || 210;
+        tooltip.style.left = (tx + tw + 16 > container.offsetWidth ? tx - tw - 8 : tx + 12) + 'px';
+        tooltip.style.top  = Math.max(0, ty - 4) + 'px';
+      },
+      hide() { tooltip.style.opacity = '0'; },
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  DR CHART  (#dr-curve-chart)
+  // ═══════════════════════════════════════════════════════════════════════════
+  function buildDRChart(container) {
     container.innerHTML = '';
     container.style.position = 'relative';
-    container.style.padding = '0';
-    container.style.display = 'flex';
+    container.style.display   = 'flex';
     container.style.flexDirection = 'column';
 
-    // Tab bar
+    // ── Controls row ─────────────────────────────────────────────────────────
     const tabBar = document.createElement('div');
     tabBar.className = 'chart-tabs';
     tabBar.innerHTML = `
-      <button class="chart-tab active" data-tab="dr">Dose–Response</button>
-      <button class="chart-tab" data-tab="compet">Adenosine Robustness</button>
+      <button class="chart-tab active" data-tab="low">Low Adenosine</button>
+      <button class="chart-tab" data-tab="tumor">Tumour-like</button>
+      <button class="chart-ic50-btn" id="ic50-toggle">IC₅₀</button>
     `;
     container.appendChild(tabBar);
 
-    // SVG wrapper — takes remaining height
     const svgWrap = document.createElement('div');
     svgWrap.className = 'chart-svg-wrap';
     container.appendChild(svgWrap);
 
-    // Tooltip
-    const tooltip = document.createElement('div');
-    tooltip.className = 'chart-tooltip';
-    container.appendChild(tooltip);
+    const tipDiv = document.createElement('div');
+    tipDiv.className = 'chart-tooltip';
+    container.appendChild(tipDiv);
 
-    const margin = { top: 22, right: 150, bottom: 52, left: 62 };
+    const margin = { top: 22, right: 152, bottom: 52, left: 62 };
+    const X_MIN = 0.001, X_MAX = 100000; // nM
+    const N_PTS  = 300;
 
-    const svg = d3.select(svgWrap).append('svg')
-      .attr('width', '100%')
-      .attr('height', '100%');
+    const svg = d3.select(svgWrap).append('svg').attr('width', '100%').attr('height', '100%');
+    const g   = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+    let showIC50  = false;
+    let activeTab = 'low';
+    let ic50Layer = null;                 // D3 selection, updated each draw
+
+    const tip = makeTipFn(container, svgWrap, margin);
 
     function innerSize() {
       const r = svgWrap.getBoundingClientRect();
@@ -92,292 +131,284 @@
       };
     }
 
-    // ── Hill equation ─────────────────────────────────────────────────────
-    function hill(x, ec50, n, emax) {
-      const xn = Math.pow(x, n), en = Math.pow(ec50, n);
-      return emax * xn / (en + xn);
-    }
-
-    // ── Shared helpers ─────────────────────────────────────────────────────
-    function fmtNM(v) {
-      if (v >= 1e6) return (v / 1e6).toFixed(1) + ' mM';
-      if (v >= 1000) return (v / 1000).toFixed(v >= 10000 ? 0 : 1) + ' µM';
-      if (v < 0.1)  return v.toFixed(3) + ' nM';
-      if (v < 1)    return v.toFixed(2) + ' nM';
-      return v.toFixed(0) + ' nM';
-    }
-
-    function showTip(html, mx, my) {
-      tooltip.innerHTML = html;
-      tooltip.style.opacity = '1';
-      const cRect = container.getBoundingClientRect();
-      const wRect = svgWrap.getBoundingClientRect();
-      const tx = wRect.left - cRect.left + margin.left + mx;
-      const ty = wRect.top  - cRect.top  + margin.top  + my;
-      const tipW = tooltip.offsetWidth || 200;
-      const cW = container.offsetWidth;
-      tooltip.style.left = (tx + tipW + 16 > cW ? tx - tipW - 6 : tx + 12) + 'px';
-      tooltip.style.top  = Math.max(0, ty - 10) + 'px';
-    }
-
-    function hideTip() { tooltip.style.opacity = '0'; }
-
-    function axisStyles(sel) {
-      sel.select('.domain').attr('stroke', 'var(--border)');
-      sel.selectAll('.tick line').attr('stroke', 'var(--border)');
-      sel.selectAll('.tick text')
-        .style('font-family', "'IBM Plex Mono', monospace")
-        .style('font-size', '10px')
-        .attr('fill', 'var(--text-muted)');
-    }
-
-    function gridGroup(parent) {
-      return parent.append('g').attr('class', 'dr-grid');
-    }
-
-    // ── Tab 1: Dose–Response ───────────────────────────────────────────────
-    function drawDR() {
+    function draw() {
       g.selectAll('*').remove();
       const { w, h } = innerSize();
+      const ec50Key = activeTab === 'low' ? 'ec50Low' : 'ec50Tumor';
 
-      const xScale = d3.scaleLog().domain([0.001, 100000]).range([0, w]);
-      const yScale = d3.scaleLinear().domain([0, 105]).range([h, 0]);
+      const xSc = d3.scaleLog().domain([X_MIN, X_MAX]).range([0, w]);
+      const ySc = d3.scaleLinear().domain([0, 105]).range([h, 0]);
 
-      // Grid
-      const xGrid = gridGroup(g);
-      xGrid.attr('transform', `translate(0,${h})`)
-        .call(d3.axisBottom(xScale)
-          .tickValues([0.001,0.01,0.1,1,10,100,1000,10000,100000])
-          .tickSize(-h).tickFormat(''));
-      xGrid.selectAll('line').attr('stroke', 'var(--border)').attr('stroke-dasharray','2,3').attr('opacity',0.5);
-      xGrid.select('.domain').remove();
+      const xTicks = [0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000];
+      const xFmt = { 0.001:'0.001',0.01:'0.01',0.1:'0.1',1:'1',10:'10',
+                     100:'100',1000:'1µM',10000:'10µM',100000:'100µM' };
 
-      const yGrid = gridGroup(g);
-      yGrid.call(d3.axisLeft(yScale).ticks(5).tickSize(-w).tickFormat(''));
-      yGrid.selectAll('line').attr('stroke', 'var(--border)').attr('stroke-dasharray','2,3').attr('opacity',0.5);
-      yGrid.select('.domain').remove();
+      // Grids
+      const xG = g.append('g').attr('transform', `translate(0,${h})`);
+      xG.call(d3.axisBottom(xSc).tickValues(xTicks).tickSize(-h).tickFormat(''));
+      gridLines(xG);
 
-      // IC₅₀ reference line at 50%
+      const yG = g.append('g');
+      yG.call(d3.axisLeft(ySc).ticks(5).tickSize(-w).tickFormat(''));
+      gridLines(yG);
+
+      // 50% reference
       g.append('line')
         .attr('x1', 0).attr('x2', w)
-        .attr('y1', yScale(50)).attr('y2', yScale(50))
-        .attr('stroke', 'var(--text-muted)').attr('stroke-dasharray','3,4').attr('stroke-width', 1);
+        .attr('y1', ySc(50)).attr('y2', ySc(50))
+        .attr('stroke', 'var(--text-muted)').attr('stroke-dasharray', '3,4').attr('stroke-width', 1);
       g.append('text')
-        .attr('x', 3).attr('y', yScale(50) - 4)
+        .attr('x', 4).attr('y', ySc(50) - 4)
         .style('font-family', "'IBM Plex Mono', monospace").style('font-size', '9px')
         .attr('fill', 'var(--text-muted)').text('IC₅₀');
 
-      // X axis
+      // Axes
       const xAxis = g.append('g').attr('transform', `translate(0,${h})`)
-        .call(d3.axisBottom(xScale)
-          .tickValues([0.001,0.01,0.1,1,10,100,1000,10000,100000])
-          .tickFormat(d => {
-            const m = {0.001:'0.001',0.01:'0.01',0.1:'0.1',1:'1',10:'10',100:'100',1000:'1µM',10000:'10µM',100000:'100µM'};
-            return m[d] || '';
-          }));
-      axisStyles(xAxis);
+        .call(d3.axisBottom(xSc).tickValues(xTicks).tickFormat(d => xFmt[d] || ''));
+      styleAxis(xAxis);
 
-      // Y axis
-      const yAxis = g.append('g').call(d3.axisLeft(yScale).ticks(5).tickFormat(d => d + '%'));
-      axisStyles(yAxis);
+      const yAxis = g.append('g').call(d3.axisLeft(ySc).ticks(5).tickFormat(d => d + '%'));
+      styleAxis(yAxis);
 
-      // Axis labels
-      g.append('text').attr('class','dr-axis-label')
-        .attr('x', w / 2).attr('y', h + 44).attr('text-anchor','middle')
-        .attr('fill','var(--text-secondary)').text('Concentration (nM)');
-      g.append('text').attr('class','dr-axis-label')
-        .attr('transform','rotate(-90)').attr('x', -h / 2).attr('y', -50)
-        .attr('text-anchor','middle').attr('fill','var(--text-secondary)').text('% Inhibition');
+      // Labels
+      const labelStyle = s => s.style('font-family', "'IBM Plex Mono', monospace")
+        .style('font-size', '0.68rem').attr('fill', 'var(--text-secondary)').attr('text-anchor', 'middle');
+      labelStyle(g.append('text').attr('x', w / 2).attr('y', h + 44)).text('Concentration (nM)');
+      labelStyle(g.append('text').attr('transform', 'rotate(-90)').attr('x', -h / 2).attr('y', -50))
+        .text('% Inhibition');
 
       // Curves
-      const lineGen = d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(d3.curveCatmullRom);
-      const N = 250, x0 = Math.log10(0.001), x1 = Math.log10(100000);
+      const lGen = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y)).curve(d3.curveCatmullRom);
+      const logMin = Math.log10(X_MIN), logMax = Math.log10(X_MAX);
 
-      drCompounds.forEach(c => {
-        const pts = d3.range(N).map(i => {
-          const x = Math.pow(10, x0 + (x1 - x0) * i / (N - 1));
-          return { x, y: hill(x, c.ec50, c.hill, c.emax) };
+      COMPOUNDS.forEach(c => {
+        const pts = d3.range(N_PTS).map(i => {
+          const x = Math.pow(10, logMin + (logMax - logMin) * i / (N_PTS - 1));
+          return { x, y: hill(x, c[ec50Key], 100) };
         });
-        const path = g.append('path').datum(pts)
-          .attr('d', lineGen).attr('fill','none')
-          .attr('stroke', c.color).attr('stroke-width', c.weight);
-        if (c.dash) path.attr('stroke-dasharray', c.dash);
+        g.append('path').datum(pts).attr('d', lGen)
+          .attr('fill', 'none').attr('stroke', c.color).attr('stroke-width', c.weight);
       });
 
       // Legend
-      drCompounds.forEach((c, i) => {
-        const ly = i * 30;
-        const lx = w + 14;
-        const p = g.append('line')
-          .attr('x1', lx).attr('x2', lx + 20).attr('y1', ly + 7).attr('y2', ly + 7)
-          .attr('stroke', c.color).attr('stroke-width', c.weight);
-        if (c.dash) p.attr('stroke-dasharray', c.dash);
-        g.append('text').attr('x', lx + 26).attr('y', ly + 11)
-          .style('font-family',"'IBM Plex Mono', monospace").style('font-size','9.5px')
-          .attr('fill','var(--text-secondary)').text(c.name);
-      });
-
-      // Hover
-      const crosshair = g.append('line').attr('class','dr-crosshair')
-        .attr('y1', 0).attr('y2', h).attr('opacity', 0)
-        .attr('stroke','var(--text-muted)').attr('stroke-dasharray','3,3').attr('stroke-width',1)
-        .attr('pointer-events','none');
-
-      g.append('rect').attr('width', w).attr('height', h).attr('fill','none').attr('pointer-events','all')
-        .on('mousemove', function(event) {
-          const [mx] = d3.pointer(event);
-          const xVal = xScale.invert(mx);
-          crosshair.attr('x1', mx).attr('x2', mx).attr('opacity', 1);
-          const xLabel = xVal >= 1000 ? fmtNM(xVal) : xVal < 1 ? xVal.toFixed(3) + ' nM' : xVal.toFixed(1) + ' nM';
-          const rows = drCompounds.map(c => {
-            const y = hill(xVal, c.ec50, c.hill, c.emax);
-            return `<div class="tt-row"><span class="tt-dot" style="background:${c.color}"></span><span>${c.name}</span><span class="tt-val">${y.toFixed(1)}%</span></div>`;
-          }).join('');
-          showTip(`<div class="tt-header">${xLabel}</div>${rows}`, mx, 20);
-        })
-        .on('mouseleave', () => { crosshair.attr('opacity', 0); hideTip(); });
-    }
-
-    // ── Tab 2: Competitiveness Profile ────────────────────────────────────
-    function drawCompet() {
-      g.selectAll('*').remove();
-      const { w, h } = innerSize();
-
-      const xScale = d3.scaleLog().domain([0.5, 300]).range([0, w]);
-      // Inverted: small IC50 (potent) at top — matches original figure
-      const yScale = d3.scaleLog().domain([0.01, 200000]).range([0, h]);
-
-      // Grid
-      const xGrid = gridGroup(g);
-      xGrid.attr('transform', `translate(0,${h})`)
-        .call(d3.axisBottom(xScale).tickValues(adoConc).tickSize(-h).tickFormat(''));
-      xGrid.selectAll('line').attr('stroke','var(--border)').attr('stroke-dasharray','2,3').attr('opacity',0.5);
-      xGrid.select('.domain').remove();
-
-      const yTicks = [0.01, 0.1, 1, 10, 100, 1000, 10000, 100000];
-      const yGrid = gridGroup(g);
-      yGrid.call(d3.axisLeft(yScale).tickValues(yTicks).tickSize(-w).tickFormat(''));
-      yGrid.selectAll('line').attr('stroke','var(--border)').attr('stroke-dasharray','2,3').attr('opacity',0.5);
-      yGrid.select('.domain').remove();
-
-      // Axes
-      const xAxis = g.append('g').attr('transform',`translate(0,${h})`)
-        .call(d3.axisBottom(xScale).tickValues(adoConc).tickFormat(d => d + ' µM'));
-      axisStyles(xAxis);
-
-      const yAxis = g.append('g').call(d3.axisLeft(yScale)
-        .tickValues(yTicks)
-        .tickFormat(d => d >= 1000 ? (d/1000).toFixed(0)+'µM' : d+''));
-      axisStyles(yAxis);
-
-      // Axis labels
-      g.append('text').attr('class','dr-axis-label')
-        .attr('x', w/2).attr('y', h+44).attr('text-anchor','middle')
-        .attr('fill','var(--text-secondary)').text('[Adenosine] (µM)');
-      g.append('text').attr('class','dr-axis-label')
-        .attr('transform','rotate(-90)').attr('x',-h/2).attr('y',-52)
-        .attr('text-anchor','middle').attr('fill','var(--text-secondary)').text('IC₅₀ (nM)  ←  more potent');
-
-      // Lines + points
-      const lineGen = d3.line()
-        .x((d, i) => xScale(adoConc[i]))
-        .y(d => yScale(d));
-
-      competCompounds.forEach(c => {
-        // Low serum — solid
-        g.append('path').datum(c.lowSerum).attr('d', lineGen)
-          .attr('fill','none').attr('stroke', c.color).attr('stroke-width', c.weight);
-        // Tumor — dashed
-        g.append('path').datum(c.tumor).attr('d', lineGen)
-          .attr('fill','none').attr('stroke', c.color)
-          .attr('stroke-width', c.weight).attr('stroke-dasharray','6,4');
-        // Low serum dots (filled)
-        c.lowSerum.forEach((v, i) => {
-          g.append('circle').attr('cx', xScale(adoConc[i])).attr('cy', yScale(v))
-            .attr('r', c.weight === 2.5 ? 5 : 4)
-            .attr('fill', c.color).attr('stroke','var(--bg-surface)').attr('stroke-width',1.5);
-        });
-        // Tumor dots (open)
-        c.tumor.forEach((v, i) => {
-          g.append('circle').attr('cx', xScale(adoConc[i])).attr('cy', yScale(v))
-            .attr('r', c.weight === 2.5 ? 5 : 4)
-            .attr('fill','var(--bg-surface)').attr('stroke', c.color).attr('stroke-width', 2);
-        });
-      });
-
-      // Legend — compounds
       const lx = w + 14;
-      competCompounds.forEach((c, i) => {
-        const ly = i * 28;
-        g.append('line').attr('x1',lx).attr('x2',lx+18).attr('y1',ly+6).attr('y2',ly+6)
+      COMPOUNDS.forEach((c, i) => {
+        const ly = i * 30;
+        g.append('line').attr('x1', lx).attr('x2', lx + 20).attr('y1', ly + 7).attr('y2', ly + 7)
           .attr('stroke', c.color).attr('stroke-width', c.weight);
-        g.append('text').attr('x', lx+24).attr('y', ly+10)
-          .style('font-family',"'IBM Plex Mono', monospace").style('font-size','9.5px')
-          .attr('fill','var(--text-secondary)').text(c.name);
+        g.append('text').attr('x', lx + 26).attr('y', ly + 11)
+          .style('font-family', "'IBM Plex Mono', monospace").style('font-size', '9.5px')
+          .attr('fill', 'var(--text-secondary)').text(c.name);
       });
-      // Condition key
-      const ky = competCompounds.length * 28 + 14;
-      g.append('line').attr('x1',lx).attr('x2',lx+18).attr('y1',ky+6).attr('y2',ky+6)
-        .attr('stroke','var(--text-muted)').attr('stroke-width',1.5);
-      g.append('text').attr('x',lx+24).attr('y',ky+10)
-        .style('font-family',"'IBM Plex Mono', monospace").style('font-size','9px')
-        .attr('fill','var(--text-muted)').text('Low serum');
-      g.append('line').attr('x1',lx).attr('x2',lx+18).attr('y1',ky+24).attr('y2',ky+24)
-        .attr('stroke','var(--text-muted)').attr('stroke-width',1.5).attr('stroke-dasharray','5,3');
-      g.append('text').attr('x',lx+24).attr('y',ky+28)
-        .style('font-family',"'IBM Plex Mono', monospace").style('font-size','9px')
-        .attr('fill','var(--text-muted)').text('Tumour');
 
-      // Hover — snap to nearest [ADO]
-      g.append('rect').attr('width', w).attr('height', h).attr('fill','none').attr('pointer-events','all')
-        .on('mousemove', function(event) {
+      // ── IC50 overlay ───────────────────────────────────────────────────────
+      ic50Layer = g.append('g').style('opacity', showIC50 ? 1 : 0);
+
+      COMPOUNDS.forEach((c, i) => {
+        const ec50 = c[ec50Key];
+        if (ec50 < X_MIN * 0.9 || ec50 > X_MAX * 1.1) return;
+        const cx = xSc(ec50);
+        const cy = ySc(50);
+
+        // Vertical dashed drop to x-axis
+        ic50Layer.append('line')
+          .attr('x1', cx).attr('x2', cx).attr('y1', cy).attr('y2', h)
+          .attr('stroke', c.color).attr('stroke-dasharray', '3,2')
+          .attr('stroke-width', 1.5).attr('opacity', 0.65);
+
+        // Dot at 50% crossing
+        ic50Layer.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 4.5)
+          .attr('fill', c.color).attr('stroke', 'var(--bg-surface)').attr('stroke-width', 1.5);
+
+        // Label — rotated below axis, alternating depth to avoid overlap
+        const labelDepth = h + 6 + (i % 2) * 10;
+        ic50Layer.append('text')
+          .attr('transform', `translate(${cx},${labelDepth}) rotate(-40)`)
+          .attr('text-anchor', 'end')
+          .style('font-family', "'IBM Plex Mono', monospace").style('font-size', '8px')
+          .attr('fill', c.color)
+          .text(fmtNM(ec50));
+      });
+
+      // ── Hover ──────────────────────────────────────────────────────────────
+      const crosshair = g.append('line')
+        .attr('y1', 0).attr('y2', h).attr('opacity', 0)
+        .attr('stroke', 'var(--text-muted)').attr('stroke-dasharray', '3,3').attr('stroke-width', 1)
+        .attr('pointer-events', 'none');
+
+      g.append('rect').attr('width', w).attr('height', h)
+        .attr('fill', 'none').attr('pointer-events', 'all')
+        .on('mousemove', function (event) {
           const [mx] = d3.pointer(event);
-          const xVal = xScale.invert(mx);
-          const ni = adoConc.reduce((best, c, i) =>
-            Math.abs(Math.log10(c) - Math.log10(xVal)) < Math.abs(Math.log10(adoConc[best]) - Math.log10(xVal)) ? i : best, 0);
-          const rows = competCompounds.map(c => {
-            const ls = c.lowSerum[ni], tm = c.tumor[ni];
-            const fold = Math.round(tm / ls);
+          const xVal = xSc.invert(mx);
+          crosshair.attr('x1', mx).attr('x2', mx).attr('opacity', 1);
+          const rows = COMPOUNDS.map(c => {
+            const pct = hill(xVal, c[ec50Key], 100);
             return `<div class="tt-row">
               <span class="tt-dot" style="background:${c.color}"></span>
               <span>${c.name}</span>
-              <span class="tt-val">${fmtNM(ls)} <span style="color:var(--text-muted)">→</span> ${fmtNM(tm)}</span>
+              <span class="tt-val">${pct.toFixed(1)}%</span>
             </div>`;
           }).join('');
-          showTip(
-            `<div class="tt-header">[ADO] = ${adoConc[ni]} µM</div>`+
-            `<div class="tt-sub">low serum → tumour</div>${rows}`,
-            xScale(adoConc[ni]), 20
-          );
+          tip.show(`<div class="tt-header">${fmtNM(xVal)}</div>${rows}`, mx, 8);
         })
-        .on('mouseleave', hideTip);
+        .on('mouseleave', () => { crosshair.attr('opacity', 0); tip.hide(); });
     }
 
-    // ── Render + tabs ─────────────────────────────────────────────────────
-    let activeTab = 'dr';
+    // ── IC50 toggle ────────────────────────────────────────────────────────
+    const ic50Btn = container.querySelector('#ic50-toggle');
+    ic50Btn.addEventListener('click', () => {
+      showIC50 = !showIC50;
+      ic50Btn.classList.toggle('active', showIC50);
+      ic50Btn.textContent = showIC50 ? 'Hide IC₅₀' : 'IC₅₀';
+      if (ic50Layer) ic50Layer.style('opacity', showIC50 ? 1 : 0);
+    });
 
-    function render() {
-      if (activeTab === 'dr') drawDR();
-      else drawCompet();
-    }
-
+    // ── Tab switching ──────────────────────────────────────────────────────
     tabBar.querySelectorAll('.chart-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         tabBar.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         activeTab = btn.dataset.tab;
-        render();
+        draw();
       });
     });
 
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(render, 150);
-    });
+    let rsz;
+    window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(draw, 150); });
+    requestAnimationFrame(() => requestAnimationFrame(draw));
+  }
 
-    // Wait two frames for layout to settle
-    requestAnimationFrame(() => requestAnimationFrame(render));
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  ADO ROBUSTNESS CHART  (#ado-chart)
+  //  IC50 (nM) vs [Adenosine] (µM) — inverted y (potent = top)
+  // ═══════════════════════════════════════════════════════════════════════════
+  function buildADOChart(container) {
+    container.innerHTML = '';
+    container.style.position = 'relative';
+    container.style.display   = 'flex';
+    container.style.flexDirection = 'column';
+
+    const svgWrap = document.createElement('div');
+    svgWrap.className = 'chart-svg-wrap';
+    container.appendChild(svgWrap);
+
+    const tipDiv = document.createElement('div');
+    tipDiv.className = 'chart-tooltip';
+    container.appendChild(tipDiv);
+
+    const margin = { top: 22, right: 152, bottom: 52, left: 72 };
+
+    const svg = d3.select(svgWrap).append('svg').attr('width', '100%').attr('height', '100%');
+    const g   = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const tip = makeTipFn(container, svgWrap, margin);
+
+    function innerSize() {
+      const r = svgWrap.getBoundingClientRect();
+      return {
+        w: Math.max(r.width  - margin.left - margin.right,  10),
+        h: Math.max(r.height - margin.top  - margin.bottom, 10),
+      };
+    }
+
+    function draw() {
+      g.selectAll('*').remove();
+      const { w, h } = innerSize();
+
+      // Inverted y: small IC50 (potent) → y = 0 (top); large IC50 → y = h (bottom)
+      const xSc = d3.scaleLog().domain([0.5, 200]).range([0, w]);
+      const ySc = d3.scaleLog().domain([0.1, 300000]).range([0, h]);
+
+      const xTicks = [1, 5, 10, 25, 100];
+      const yTicks = [0.1, 1, 10, 100, 1000, 10000, 100000];
+
+      // Grids
+      const xG = g.append('g').attr('transform', `translate(0,${h})`);
+      xG.call(d3.axisBottom(xSc).tickValues(xTicks).tickSize(-h).tickFormat(''));
+      gridLines(xG);
+
+      const yG = g.append('g');
+      yG.call(d3.axisLeft(ySc).tickValues(yTicks).tickSize(-w).tickFormat(''));
+      gridLines(yG);
+
+      // Axes
+      const xAxis = g.append('g').attr('transform', `translate(0,${h})`)
+        .call(d3.axisBottom(xSc).tickValues(xTicks).tickFormat(d => d + ' µM'));
+      styleAxis(xAxis);
+
+      const yAxis = g.append('g').call(d3.axisLeft(ySc)
+        .tickValues(yTicks)
+        .tickFormat(d => d >= 1000 ? (d / 1000).toFixed(0) + 'µM' : d + ''));
+      styleAxis(yAxis);
+
+      // Axis labels
+      const ls = s => s.style('font-family', "'IBM Plex Mono', monospace")
+        .style('font-size', '0.68rem').attr('fill', 'var(--text-secondary)').attr('text-anchor', 'middle');
+      ls(g.append('text').attr('x', w / 2).attr('y', h + 44)).text('[Adenosine] (µM)');
+      ls(g.append('text').attr('transform', 'rotate(-90)').attr('x', -h / 2).attr('y', -60))
+        .text('IC₅₀ (nM)  ←  more potent');
+
+      // Lines + dots
+      const lGen = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y));
+
+      CD3_DATA.forEach(c => {
+        g.append('path').datum(c.pts).attr('d', lGen)
+          .attr('fill', 'none').attr('stroke', c.color).attr('stroke-width', c.weight);
+        c.pts.forEach(p => {
+          g.append('circle').attr('cx', xSc(p.x)).attr('cy', ySc(p.y))
+            .attr('r', c.weight === 2.5 ? 5 : 4)
+            .attr('fill', c.color).attr('stroke', 'var(--bg-surface)').attr('stroke-width', 1.5);
+        });
+      });
+
+      // Legend
+      const lx = w + 14;
+      CD3_DATA.forEach((c, i) => {
+        const ly = i * 28;
+        g.append('line').attr('x1', lx).attr('x2', lx + 18).attr('y1', ly + 6).attr('y2', ly + 6)
+          .attr('stroke', c.color).attr('stroke-width', c.weight);
+        g.append('text').attr('x', lx + 24).attr('y', ly + 10)
+          .style('font-family', "'IBM Plex Mono', monospace").style('font-size', '9.5px')
+          .attr('fill', 'var(--text-secondary)').text(c.name);
+      });
+
+      // Hover — snap to nearest x point
+      const allX = [...new Set(CD3_DATA.flatMap(c => c.pts.map(p => p.x)))].sort((a, b) => a - b);
+
+      g.append('rect').attr('width', w).attr('height', h)
+        .attr('fill', 'none').attr('pointer-events', 'all')
+        .on('mousemove', function (event) {
+          const [mx] = d3.pointer(event);
+          const xVal = xSc.invert(mx);
+          const nearest = allX.reduce((best, v) =>
+            Math.abs(Math.log10(v) - Math.log10(xVal)) < Math.abs(Math.log10(best) - Math.log10(xVal)) ? v : best);
+          const rows = CD3_DATA.map(c => {
+            const pt = c.pts.find(p => p.x === nearest);
+            const val = pt ? fmtNM(pt.y) : '—';
+            return `<div class="tt-row">
+              <span class="tt-dot" style="background:${c.color}"></span>
+              <span>${c.name}</span>
+              <span class="tt-val">${val}</span>
+            </div>`;
+          }).join('');
+          tip.show(`<div class="tt-header">[ADO] = ${nearest} µM</div>${rows}`, xSc(nearest), 20);
+        })
+        .on('mouseleave', () => tip.hide());
+    }
+
+    let rsz;
+    window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(draw, 150); });
+    requestAnimationFrame(() => requestAnimationFrame(draw));
+  }
+
+  // ── Bootstrap ─────────────────────────────────────────────────────────────
+  function init() {
+    if (typeof d3 === 'undefined') return;
+    const drEl  = document.getElementById('dr-curve-chart');
+    const adoEl = document.getElementById('ado-chart');
+    if (drEl)  buildDRChart(drEl);
+    if (adoEl) buildADOChart(adoEl);
   }
 
   if (document.readyState === 'loading') {

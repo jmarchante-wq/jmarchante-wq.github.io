@@ -303,6 +303,44 @@ h2 em {
   min-height: 0;
 }
 
+.chart-ic50-btn {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.chart-ic50-btn:hover,
+.chart-ic50-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.case-chart-note {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin: 0.55rem 0 0;
+}
+
+.case-subcaption {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 2rem 0 0.5rem;
+}
+
 .chart-svg-wrap svg {
   display: block;
 }
