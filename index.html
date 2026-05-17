@@ -164,25 +164,23 @@
     <div class="section-label">03 — Case Studies</div>
     <h2>Work in detail.<br /><em>Data tells the story.</em></h2>
 
-    <!-- Case 1: DR Curves -->
+    <!-- Case 1: A2AR competitive profiling -->
     <div class="case">
       <div class="case-header">
         <div class="case-meta">
-          <span class="case-tag">Pharmacology</span>
-          <span class="case-tag">Interactivity</span>
+          <span class="case-tag">A2AR</span>
+          <span class="case-tag">Immuno-oncology</span>
         </div>
-        <h3>Dose–Response Characterisation</h3>
+        <h3>A2AR Antagonist — Competitive Profiling</h3>
         <p class="case-description">
-          Hover over any curve to read EC₅₀ and maximum activity at that point.
-          A core output of in vitro pharmacology — the language in which compounds
-          speak before they become candidates.
+          Potency across A2AR antagonists in low-adenosine conditions — where the
+          iTeos compound leads the field at sub-100 pM (Tab 1). Under rising
+          adenosine that mimics the tumour microenvironment, competitors shift
+          by 100- to 10,000-fold while Inupadenant holds single-digit nM (Tab 2).
+          Hover to read values.
         </p>
       </div>
-      <div class="case-visual" id="dr-curve-chart">
-        <div class="chart-placeholder">
-          <span class="placeholder-label">[ D3 dose–response curves · in progress ]</span>
-        </div>
-      </div>
+      <div class="case-visual" id="dr-curve-chart"></div>
     </div>
 
     <!-- Case 2: Screening Cascade -->
@@ -483,5 +481,6 @@
   </footer>
 
   <script src="main.js"></script>
+  <script src="visualizations/dr-curve.js"></script>
 </body>
 </html>

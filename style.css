@@ -264,6 +264,109 @@ h2 em {
 }
 
 /* ═══════════════════════════════════════════
+   D3 CHART — TABS, SVG WRAP, TOOLTIP
+═══════════════════════════════════════════ */
+.chart-tabs {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem 0;
+  flex-shrink: 0;
+}
+
+.chart-tab {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.chart-tab:hover {
+  color: var(--text-secondary);
+  border-color: var(--accent-dim);
+}
+
+.chart-tab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.chart-svg-wrap {
+  flex: 1;
+  min-height: 0;
+}
+
+.chart-svg-wrap svg {
+  display: block;
+}
+
+.dr-axis-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  fill: var(--text-secondary);
+}
+
+.chart-tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-primary);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 20;
+  max-width: 230px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.tt-header {
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.05em;
+}
+
+.tt-sub {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+
+.tt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.18rem 0;
+  white-space: nowrap;
+}
+
+.tt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tt-val {
+  margin-left: auto;
+  padding-left: 0.6rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════
    CHART PLACEHOLDER
 ═══════════════════════════════════════════ */
 .chart-placeholder {
