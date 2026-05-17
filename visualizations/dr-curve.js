@@ -57,13 +57,6 @@
       .attr('fill', 'var(--text-muted)');
   }
 
-  function gridLines(parent) {
-    return parent.append('g').call(function (g) {
-      g.selectAll('line').attr('stroke', 'var(--border)').attr('stroke-dasharray', '2,3').attr('opacity', 0.5);
-      g.select('.domain').remove();
-    });
-  }
-
   // ── Tooltip helper ────────────────────────────────────────────────────────
   function makeTipFn(container, svgWrap, margin) {
     const tooltip = container.querySelector('.chart-tooltip');
@@ -142,15 +135,6 @@
       const xTicks = [0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000, 100000];
       const xFmt = { 0.001:'0.001',0.01:'0.01',0.1:'0.1',1:'1',10:'10',
                      100:'100',1000:'1µM',10000:'10µM',100000:'100µM' };
-
-      // Grids
-      const xG = g.append('g').attr('transform', `translate(0,${h})`);
-      xG.call(d3.axisBottom(xSc).tickValues(xTicks).tickSize(-h).tickFormat(''));
-      gridLines(xG);
-
-      const yG = g.append('g');
-      yG.call(d3.axisLeft(ySc).ticks(5).tickSize(-w).tickFormat(''));
-      gridLines(yG);
 
       // 50% reference
       g.append('line')
@@ -323,15 +307,6 @@
       const xTicks = [1, 5, 10, 25, 100];
       const yTicks = [0.1, 1, 10, 100, 1000, 10000, 100000];
 
-      // Grids
-      const xG = g.append('g').attr('transform', `translate(0,${h})`);
-      xG.call(d3.axisBottom(xSc).tickValues(xTicks).tickSize(-h).tickFormat(''));
-      gridLines(xG);
-
-      const yG = g.append('g');
-      yG.call(d3.axisLeft(ySc).tickValues(yTicks).tickSize(-w).tickFormat(''));
-      gridLines(yG);
-
       // Axes
       const xAxis = g.append('g').attr('transform', `translate(0,${h})`)
         .call(d3.axisBottom(xSc).tickValues(xTicks).tickFormat(d => d + ' µM'));
@@ -349,11 +324,30 @@
       ls(g.append('text').attr('transform', 'rotate(-90)').attr('x', -h / 2).attr('y', -60))
         .text('IC₅₀ (nM)  ←  more potent');
 
-      // Lines + dots
-      const lGen = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y));
+      // Log-log linear regression → power-law curve fit
+      function logLogFit(pts) {
+        const n  = pts.length;
+        const lx = pts.map(p => Math.log10(p.x));
+        const ly = pts.map(p => Math.log10(p.y));
+        const mx = lx.reduce((a, b) => a + b) / n;
+        const my = ly.reduce((a, b) => a + b) / n;
+        const slope     = lx.reduce((s, x, i) => s + (x - mx) * (ly[i] - my), 0) /
+                          lx.reduce((s, x)    => s + (x - mx) ** 2, 0);
+        const intercept = my - slope * mx;
+        return x => Math.pow(10, intercept + slope * Math.log10(x));
+      }
+
+      const curveLine = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y));
+      const CURVE_N   = 150;
+      const logXMin   = Math.log10(0.5), logXMax = Math.log10(200);
 
       CD3_DATA.forEach(c => {
-        g.append('path').datum(c.pts).attr('d', lGen)
+        const fitFn = logLogFit(c.pts);
+        const curvePts = d3.range(CURVE_N).map(i => {
+          const x = Math.pow(10, logXMin + (logXMax - logXMin) * i / (CURVE_N - 1));
+          return { x, y: fitFn(x) };
+        });
+        g.append('path').datum(curvePts).attr('d', curveLine)
           .attr('fill', 'none').attr('stroke', c.color).attr('stroke-width', c.weight);
         c.pts.forEach(p => {
           g.append('circle').attr('cx', xSc(p.x)).attr('cy', ySc(p.y))
