@@ -339,12 +339,13 @@
 
       const curveLine = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y));
       const CURVE_N   = 150;
-      const logXMin   = Math.log10(0.5), logXMax = Math.log10(200);
 
       CD3_DATA.forEach(c => {
-        const fitFn = logLogFit(c.pts);
+        const fitFn  = logLogFit(c.pts);
+        const cxMin  = Math.log10(d3.min(c.pts, p => p.x));
+        const cxMax  = Math.log10(d3.max(c.pts, p => p.x));
         const curvePts = d3.range(CURVE_N).map(i => {
-          const x = Math.pow(10, logXMin + (logXMax - logXMin) * i / (CURVE_N - 1));
+          const x = Math.pow(10, cxMin + (cxMax - cxMin) * i / (CURVE_N - 1));
           return { x, y: fitFn(x) };
         });
         g.append('path').datum(curvePts).attr('d', curveLine)
