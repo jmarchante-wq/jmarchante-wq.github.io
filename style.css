@@ -649,16 +649,12 @@ h2 em {
 .story-chart-wrap {
   position: sticky;
   top: 84px;
-  height: calc(100vh - 130px);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
 }
 
 .story-chart-stack {
-  flex: 1;
-  min-height: 0;
+  height: calc(100vh - 160px);
   position: relative;
+  margin-bottom: 0.5rem;
 }
 
 .story-chart {
@@ -679,7 +675,6 @@ h2 em {
 }
 
 .story-chart-caption {
-  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 0.63rem;
   color: var(--text-muted);
@@ -1067,9 +1062,12 @@ footer {
   .story-chart-wrap {
     position: relative;
     top: auto;
-    height: 380px;
     order: -1;
     margin-bottom: 1.5rem;
+  }
+
+  .story-chart-stack {
+    height: 380px;
   }
 
   .story-chapter {
