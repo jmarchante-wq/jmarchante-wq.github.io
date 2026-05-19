@@ -594,7 +594,7 @@ h2 em {
 ═══════════════════════════════════════════ */
 .story-layout {
   display: grid;
-  grid-template-columns: 1fr 1.05fr;
+  grid-template-columns: 1fr 1.35fr;
   gap: 3.5rem;
   align-items: start;
 }
@@ -652,7 +652,7 @@ h2 em {
 }
 
 .story-chart-stack {
-  height: calc(100vh - 160px);
+  height: calc(75vh - 120px);
   position: relative;
   margin-bottom: 0.5rem;
 }
