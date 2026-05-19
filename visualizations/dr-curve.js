@@ -70,7 +70,6 @@
   // ═══════════════════════════════════════════════════════════════════════════
   function buildDRChart(container) {
     container.innerHTML = '';
-    container.style.position = 'relative';
     container.style.display   = 'flex';
     container.style.flexDirection = 'column';
 
@@ -246,7 +245,6 @@
   // ═══════════════════════════════════════════════════════════════════════════
   function buildADOChart(container) {
     container.innerHTML = '';
-    container.style.position = 'relative';
     container.style.display   = 'flex';
     container.style.flexDirection = 'column';
 
