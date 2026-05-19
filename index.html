@@ -164,29 +164,83 @@
     <div class="section-label">03 — Case Studies</div>
     <h2>Work in detail.<br /><em>Data tells the story.</em></h2>
 
-    <!-- Case 1: A2AR competitive profiling -->
-    <div class="case">
+    <!-- Case 1: A2AR competitive profiling — scrollytelling -->
+    <div class="case story-case">
       <div class="case-header">
         <div class="case-meta">
           <span class="case-tag">A2AR</span>
           <span class="case-tag">Immuno-oncology</span>
         </div>
         <h3>A2AR Antagonist — Competitive Profiling</h3>
-        <p class="case-description">
-          Four A2AR antagonists in a HEK-hA2AR cell cAMP assay. Inupadenant leads
-          the field at sub-100 pM under standard conditions; toggle to the
-          tumour-like tab and competitors shift by 1,000- to 10,000-fold while
-          Inupadenant holds at 3 nM. The CD3 assay below shows the same advantage
-          scales with adenosine concentration in primary human T cells.
-          Hover to read values — toggle IC₅₀ to compare potencies.
-        </p>
       </div>
-      <div class="case-visual" id="dr-curve-chart"></div>
-      <p class="case-chart-note">HEK-hA2AR cell-based cAMP assay - Inupadenant retains a higher potency under tumor-like conditions</p>
 
-      <p class="case-subcaption">Human CD3+ T cell cAMP assay — tumour-like conditions</p>
-      <div class="case-visual" id="ado-chart"></div>
-      <p class="case-chart-note">Inupadenant retains sub-nM potency at all adenosine concentrations tested. Competitors lose 10- to &gt;200,000-fold activity as adenosine rises.</p>
+      <div class="story-layout">
+
+        <!-- Left: scrolling chapters -->
+        <div class="story-chapters">
+
+          <div class="story-chapter" data-state="low">
+            <div class="story-chapter-inner">
+              <p class="story-eyebrow">HEK-hA2AR · cAMP assay · low adenosine</p>
+              <h4 class="story-headline">Four compounds.<br><em>One target.</em></h4>
+              <p class="story-body">
+                By 2020, iTeos, Arcus, Corvus, and AstraZeneca were all racing to
+                develop an A2AR antagonist for immuno-oncology. Under standard,
+                low-adenosine conditions, the picture looked competitive —
+                Inupadenant led at 63 pM, but all four compounds were active.
+              </p>
+              <p class="story-body">That picture was incomplete.</p>
+            </div>
+          </div>
+
+          <div class="story-chapter" data-state="tumor">
+            <div class="story-chapter-inner">
+              <p class="story-eyebrow">Same assay · 200 µM adenosine · tumour-like</p>
+              <h4 class="story-headline">We changed<br><em>one thing.</em></h4>
+              <p class="story-body">
+                Tumours are adenosine-rich environments. The real test was to
+                re-run the assay at concentrations matching the tumour
+                microenvironment. The competitors shifted 1,000- to 10,000-fold.
+                Inupadenant held at 3 nM.
+              </p>
+              <p class="story-body">
+                This wasn't just a better compound — it was a different pharmacological
+                class. An unsurmountable antagonist that held its ground precisely
+                where it had to.
+              </p>
+            </div>
+          </div>
+
+          <div class="story-chapter" data-state="ado">
+            <div class="story-chapter-inner">
+              <p class="story-eyebrow">Human CD3+ T cells · escalating adenosine</p>
+              <h4 class="story-headline">The gap<br><em>only widens.</em></h4>
+              <p class="story-body">
+                In primary human T cells — the physiological context that matters —
+                the same pattern held across every adenosine concentration tested.
+                Inupadenant maintained sub-nM potency throughout. Competitors lost
+                10- to &gt;200,000-fold activity as adenosine rose.
+              </p>
+              <p class="story-body">
+                Inupadenant entered Phase I and reached Phase II clinical trials.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: sticky chart -->
+        <div class="story-chart-wrap">
+          <div class="story-chart-stack">
+            <div class="story-chart" id="story-chart-dr"></div>
+            <div class="story-chart" id="story-chart-ado"></div>
+          </div>
+          <p class="story-chart-caption" id="story-chart-caption">
+            HEK-hA2AR cell-based cAMP assay · Hill slope = 1 · low adenosine (1 µM)
+          </p>
+        </div>
+
+      </div>
     </div>
 
     <!-- Case 2: Screening Cascade -->
