@@ -175,3 +175,46 @@ Always use the CSS custom properties above so both themes work correctly.
 - Hard refresh with Ctrl+Shift+R to bypass browser cache after deploys
 - Check deploy status at:
   `https://github.com/jmarchante-wq/jmarchante-wq.github.io/actions`
+
+---
+
+## Scrollytelling — Case Studies layout (new direction)
+
+### Concept
+Replace the current static case study layout with full-bleed immersive
+scrollytelling — the same technique used by NYT, The Pudding, Reuters Graphics.
+
+### How it works
+- Each case study has a visual (D3 chart or image) that fills 100vh — sticky,
+  fixed in place like a background
+- Text blocks overlay the visual and scroll over it
+- As each text block enters the viewport, the visual updates (chart state changes,
+  curve highlights, funnel advances)
+- When text scrolls away the full visual is briefly exposed — cinematic moment
+- Next case study section rises from the bottom
+
+### Core CSS pattern
+- `.sticky-visual` — position: sticky, top: 0, height: 100vh, z-index: 0
+- `.scroll-steps` — position: relative, z-index: 1, margin-top: -100vh
+- `.step` — min-height: 80vh, each block controls how long the visual stays
+
+### Trigger mechanism
+IntersectionObserver on each `.step` element — same pattern already in main.js
+for scroll-reveal. When a step enters viewport it fires a function that updates
+the active chart state.
+
+### Applied to each case study
+1. DR curves — text steps explain EC50, Emax, compound comparison;
+   chart highlights the relevant curve or shows tooltip per step
+2. Screening cascade — funnel builds stage by stage as user scrolls
+   through the narrative of the campaign
+3. Programme timeline — milestones unlock one by one as text advances
+
+### Priority
+Build the D3 charts first (DR curves next), then wrap in scrollytelling layout.
+Scrollytelling is the container — the charts need to exist first.
+
+### Mobile
+On small screens the sticky full-bleed approach works naturally since it already
+uses the full viewport. Text contrast over the visual needs care — semi-transparent
+background on text blocks recommended.
