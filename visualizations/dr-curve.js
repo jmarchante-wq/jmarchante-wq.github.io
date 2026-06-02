@@ -70,8 +70,6 @@
   // ═══════════════════════════════════════════════════════════════════════════
   function buildDRChart(container) {
     container.innerHTML = '';
-    container.style.display   = 'flex';
-    container.style.flexDirection = 'column';
 
     const svgWrap = document.createElement('div');
     svgWrap.className = 'chart-svg-wrap';
@@ -79,7 +77,7 @@
 
     const tip = makeTip(container);
 
-    const margin = { top: 22, right: 152, bottom: 52, left: 62 };
+    const margin = { top: 130, right: 155, bottom: 58, left: 65 };
     const X_MIN  = 0.001, X_MAX = 100000;
     const N_PTS  = 300;
     const xVals  = d3.range(N_PTS).map(i =>
@@ -245,8 +243,6 @@
   // ═══════════════════════════════════════════════════════════════════════════
   function buildADOChart(container) {
     container.innerHTML = '';
-    container.style.display   = 'flex';
-    container.style.flexDirection = 'column';
 
     const svgWrap = document.createElement('div');
     svgWrap.className = 'chart-svg-wrap';
@@ -254,7 +250,7 @@
 
     const tip = makeTip(container);
 
-    const margin = { top: 22, right: 152, bottom: 52, left: 72 };
+    const margin = { top: 130, right: 155, bottom: 58, left: 75 };
     const svg = d3.select(svgWrap).append('svg').attr('width', '100%').attr('height', '100%');
     const g   = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -400,21 +396,22 @@
         drAPI.morphTo(state);
       }
 
-      document.querySelectorAll('.story-chapter').forEach(ch =>
-        ch.classList.toggle('active', ch.dataset.state === state));
+      document.querySelectorAll('.step').forEach(step =>
+        step.classList.toggle('active', step.dataset.state === state));
     }
 
-    // Activate first chapter immediately
-    const firstChapter = document.querySelector('.story-chapter[data-state="low"]');
-    if (firstChapter) firstChapter.classList.add('active');
+    // Activate first step immediately
+    const firstStep = document.querySelector('.step[data-state="low"]');
+    if (firstStep) firstStep.classList.add('active');
 
+    // Fire when step top enters the upper half of the viewport
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) activate(entry.target.dataset.state);
       });
-    }, { rootMargin: '-30% 0px -40% 0px', threshold: 0 });
+    }, { rootMargin: '0px 0px -50% 0px', threshold: 0 });
 
-    document.querySelectorAll('.story-chapter').forEach(ch => observer.observe(ch));
+    document.querySelectorAll('.step').forEach(step => observer.observe(step));
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────

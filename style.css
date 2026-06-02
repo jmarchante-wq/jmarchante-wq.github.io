@@ -532,6 +532,20 @@ h2 em {
 ═══════════════════════════════════════════ */
 #cases {
   border-bottom: 1px solid var(--border);
+  max-width: 100%;
+  padding: 7rem 0 0;
+}
+
+.cases-header {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+.cases-rest {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 5rem 2rem 7rem;
 }
 
 .case {
@@ -590,29 +604,103 @@ h2 em {
 }
 
 /* ═══════════════════════════════════════════
-   STORY LAYOUT (Case 1 scrollytelling)
+   STORY SCENE (full-bleed scrollytelling)
 ═══════════════════════════════════════════ */
-.story-layout {
-  display: grid;
-  grid-template-columns: 1fr 1.35fr;
-  gap: 3.5rem;
-  align-items: start;
+
+/* Outer wrapper — full width, height driven by scroll-steps */
+.story-scene {
+  position: relative;
 }
 
-.story-chapter {
-  min-height: 65vh;
+/* Chart fills the viewport, sticks in place while steps scroll over it */
+.sticky-visual {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 0;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+/* Two charts occupy the same space — crossfade between them */
+.sv-chart {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+
+.sv-chart.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tags + title overlaid top-left, above the navbar-clear zone */
+.sv-meta {
+  position: absolute;
+  top: 5.5rem;
+  left: 2.5rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sv-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-top: 0.5rem;
+  line-height: 1.3;
+}
+
+/* Caption centred at the bottom of the visual */
+.sv-caption {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* Steps sit on top of the sticky-visual, scrolling upward over it */
+.scroll-steps {
+  position: relative;
+  z-index: 1;
+  margin-top: -100vh;        /* overlap starts flush with visual top */
+  padding-bottom: 40vh;      /* cinematic pause — full chart visible after last step */
+  pointer-events: none;
+}
+
+/* Each step keeps the visual visible long enough to read */
+.step {
+  min-height: 85vh;
   display: flex;
   align-items: center;
-  padding: 2rem 0;
+  padding: 4rem 0;
+  pointer-events: none;
 }
 
-.story-chapter-inner {
-  opacity: 0.3;
-  transition: opacity 0.55s ease;
-}
-
-.story-chapter.active .story-chapter-inner {
-  opacity: 1;
+/* Frosted-glass text card */
+.step-content {
+  pointer-events: auto;
+  max-width: 360px;
+  margin-left: 4vw;
+  padding: 1.8rem 2rem;
+  background: var(--bg-surface);                                 /* solid fallback */
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 4px;
 }
 
 .story-eyebrow {
@@ -626,10 +714,10 @@ h2 em {
 
 .story-headline {
   font-family: var(--font-display);
-  font-size: clamp(1.9rem, 2.8vw, 2.5rem);
+  font-size: clamp(1.7rem, 2.4vw, 2.2rem);
   color: var(--text-primary);
   line-height: 1.15;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
 }
 
 .story-headline em {
@@ -638,49 +726,15 @@ h2 em {
 }
 
 .story-body {
-  font-size: 0.96rem;
+  font-size: 0.93rem;
   color: var(--text-secondary);
   font-weight: 300;
-  line-height: 1.85;
-  margin-bottom: 1rem;
-  max-width: 420px;
+  line-height: 1.8;
+  margin-bottom: 0.9rem;
 }
 
-.story-chart-wrap {
-  position: sticky;
-  top: 84px;
-}
-
-.story-chart-stack {
-  height: calc(75vh - 120px);
-  position: relative;
-  margin-bottom: 0.5rem;
-}
-
-.story-chart {
-  position: absolute;
-  inset: 0;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.7s ease;
-  pointer-events: none;
-}
-
-.story-chart.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.story-chart-caption {
-  font-family: var(--font-mono);
-  font-size: 0.63rem;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-  transition: opacity 0.35s ease;
-  line-height: 1.5;
+.story-body:last-child {
+  margin-bottom: 0;
 }
 
 /* ═══════════════════════════════════════════
@@ -1055,28 +1109,22 @@ footer {
     grid-template-columns: 1fr 1fr;
   }
 
-  .story-layout {
-    grid-template-columns: 1fr;
+  /* Story scene: full-bleed works naturally on mobile */
+  .step {
+    min-height: 70vh;
+    padding: 2.5rem 0;
   }
 
-  .story-chart-wrap {
-    position: relative;
-    top: auto;
-    order: -1;
-    margin-bottom: 1.5rem;
+  .step-content {
+    max-width: calc(100vw - 3rem);
+    margin-left: 1.5rem;
+    padding: 1.4rem 1.5rem;
   }
 
-  .story-chart-stack {
-    height: 380px;
-  }
-
-  .story-chapter {
-    min-height: auto;
-    padding: 1.5rem 0;
-  }
-
-  .story-chapter-inner {
-    opacity: 1 !important;
+  .cases-header,
+  .cases-rest {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 
@@ -1084,4 +1132,20 @@ footer {
   .expertise-grid { grid-template-columns: 1fr; }
   .nav-links { display: none; }
   section { padding: 4rem 1.2rem; }
+
+  /* Tighten story scene on small phones */
+  .step {
+    min-height: 60vh;
+  }
+
+  .step-content {
+    max-width: calc(100vw - 2rem);
+    margin-left: 1rem;
+    padding: 1.2rem;
+  }
+
+  .sv-meta {
+    left: 1rem;
+    top: 5rem;
+  }
 }
