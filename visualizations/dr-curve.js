@@ -77,7 +77,7 @@
 
     const tip = makeTip(container);
 
-    const margin = { top: 130, right: 155, bottom: 58, left: 65 };
+    const margin = { top: 90, right: 155, bottom: 58, left: 65 };
     const X_MIN  = 0.001, X_MAX = 100000;
     const N_PTS  = 300;
     const xVals  = d3.range(N_PTS).map(i =>
@@ -91,6 +91,7 @@
     let currentEC50s  = COMPOUNDS.map(c => c.ec50Low);
     let ic50Visible   = false;
     let ic50Timer     = null;
+    let highlighted   = false;
 
     function innerSize() {
       const r = svgWrap.getBoundingClientRect();
@@ -159,6 +160,8 @@
         paths.push(p);
       });
 
+      if (highlighted) setHighlight(true, true);
+
       // IC50 overlay group
       ic50Group = g.append('g').style('opacity', ic50Visible ? 1 : 0);
       renderIC50Labels(w, h);
@@ -198,6 +201,21 @@
         .on('mouseleave', () => { crosshair.attr('opacity', 0); tip.hide(); });
     }
 
+    function setHighlight(active, immediate) {
+      highlighted = active;
+      paths.forEach((p, i) => {
+        const c = COMPOUNDS[i];
+        const isIteos = c.id === 'iteos';
+        const targetOpacity = active ? (isIteos ? 1 : 0.2) : 1;
+        const targetWeight  = active ? (isIteos ? 3 : c.weight * 0.6) : c.weight;
+        if (immediate) {
+          p.attr('opacity', targetOpacity).attr('stroke-width', targetWeight);
+        } else {
+          p.transition().duration(500).attr('opacity', targetOpacity).attr('stroke-width', targetWeight);
+        }
+      });
+    }
+
     // Morphs curves from current EC50s to target state via log-space interpolation
     function morphTo(state) {
       const targetEC50s = COMPOUNDS.map(c => state === 'low' ? c.ec50Low : c.ec50Tumor);
@@ -206,6 +224,7 @@
       if (ic50Timer) { clearTimeout(ic50Timer); ic50Timer = null; }
       ic50Group.transition().duration(200).style('opacity', 0);
       ic50Visible = false;
+      setHighlight(false);
 
       const { w, h } = innerSize();
       const lGen = d3.line().x(d => xSc(d.x)).y(d => ySc(d.y)).curve(d3.curveCatmullRom);
@@ -223,6 +242,9 @@
 
       if (state === 'tumor') {
         ic50Timer = setTimeout(() => {
+          setHighlight(true);
+        }, 1000);
+        setTimeout(() => {
           const { w: w2, h: h2 } = innerSize();
           renderIC50Labels(w2, h2);
           ic50Group.transition().duration(400).style('opacity', 1);
@@ -235,7 +257,7 @@
     window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(buildScaffold, 150); });
     requestAnimationFrame(() => requestAnimationFrame(buildScaffold));
 
-    return { morphTo };
+    return { morphTo, highlight: setHighlight };
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -250,7 +272,7 @@
 
     const tip = makeTip(container);
 
-    const margin = { top: 130, right: 155, bottom: 58, left: 75 };
+    const margin = { top: 90, right: 155, bottom: 58, left: 75 };
     const svg = d3.select(svgWrap).append('svg').attr('width', '100%').attr('height', '100%');
     const g   = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -274,8 +296,11 @@
       return x => Math.pow(10, intercept + slope * Math.log10(x));
     }
 
+    let adoPaths = [];
+
     function draw() {
       g.selectAll('*').remove();
+      adoPaths = [];
       const { w, h } = innerSize();
 
       const xSc = d3.scaleLog().domain([0.5, 200]).range([0, w]);
@@ -306,8 +331,9 @@
           const x = Math.pow(10, cxMin + (cxMax - cxMin) * i / (CURVE_N - 1));
           return { x, y: fitFn(x) };
         });
-        g.append('path').datum(curvePts).attr('d', curveLine)
+        const aPath = g.append('path').datum(curvePts).attr('d', curveLine)
           .attr('fill', 'none').attr('stroke', c.color).attr('stroke-width', c.weight);
+        adoPaths.push({ path: aPath, compound: c });
         c.pts.forEach(p => {
           g.append('circle').attr('cx', xSc(p.x)).attr('cy', ySc(p.y))
             .attr('r', c.weight === 2.5 ? 5 : 4)
@@ -348,9 +374,20 @@
         .on('mouseleave', () => tip.hide());
     }
 
+    function setHighlight(active) {
+      adoPaths.forEach(({ path, compound }) => {
+        const isIteos = compound.id === 'iteos';
+        const targetOpacity = active ? (isIteos ? 1 : 0.2) : 1;
+        const targetWeight  = active ? (isIteos ? 3 : compound.weight * 0.6) : compound.weight;
+        path.transition().duration(500).attr('opacity', targetOpacity).attr('stroke-width', targetWeight);
+      });
+    }
+
     let rsz;
     window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(draw, 150); });
     requestAnimationFrame(() => requestAnimationFrame(draw));
+
+    return { highlight: setHighlight };
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -361,8 +398,8 @@
     const adoEl = document.getElementById('story-chart-ado');
     if (!drEl || !adoEl) return;
 
-    const drAPI = buildDRChart(drEl);
-    buildADOChart(adoEl);
+    const drAPI  = buildDRChart(drEl);
+    const adoAPI = buildADOChart(adoEl);
 
     drEl.classList.add('visible');
 
@@ -390,6 +427,7 @@
       if (state === 'ado') {
         drEl.classList.remove('visible');
         adoEl.classList.add('visible');
+        setTimeout(() => adoAPI.highlight(true), 800);
       } else {
         adoEl.classList.remove('visible');
         drEl.classList.add('visible');

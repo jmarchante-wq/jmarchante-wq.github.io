@@ -604,25 +604,26 @@ h2 em {
 }
 
 /* ═══════════════════════════════════════════
-   STORY SCENE (full-bleed scrollytelling)
+   STORY SCENE — desktop two-column
 ═══════════════════════════════════════════ */
 
-/* Outer wrapper — full width, height driven by scroll-steps */
 .story-scene {
-  position: relative;
+  display: grid;
+  grid-template-columns: 44% 56%;
+  align-items: start;
 }
 
-/* Chart fills the viewport, sticks in place while steps scroll over it */
 .sticky-visual {
+  grid-column: 2;
+  grid-row: 1;
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: 84px;
+  height: calc(100vh - 84px);
   z-index: 0;
   background: var(--bg-surface);
   overflow: hidden;
 }
 
-/* Two charts occupy the same space — crossfade between them */
 .sv-chart {
   position: absolute;
   inset: 0;
@@ -638,10 +639,9 @@ h2 em {
   pointer-events: auto;
 }
 
-/* Tags + title overlaid top-left, above the navbar-clear zone */
 .sv-meta {
   position: absolute;
-  top: 5.5rem;
+  top: 1.5rem;
   left: 2.5rem;
   z-index: 2;
   pointer-events: none;
@@ -655,7 +655,6 @@ h2 em {
   line-height: 1.3;
 }
 
-/* Caption centred at the bottom of the visual */
 .sv-caption {
   position: absolute;
   bottom: 1.2rem;
@@ -671,36 +670,38 @@ h2 em {
   transition: opacity 0.35s ease;
 }
 
-/* Steps sit on top of the sticky-visual, scrolling upward over it */
 .scroll-steps {
+  grid-column: 1;
+  grid-row: 1;
   position: relative;
   z-index: 1;
-  margin-top: -100vh;        /* overlap starts flush with visual top */
-  padding-bottom: 40vh;      /* cinematic pause — full chart visible after last step */
+  padding: 5vh 3vw 30vh 4vw;
   pointer-events: none;
 }
 
-/* Each step keeps the visual visible long enough to read */
 .step {
-  min-height: 85vh;
+  min-height: 120vh;
   display: flex;
   align-items: center;
   padding: 4rem 0;
   pointer-events: none;
 }
 
-/* Frosted-glass text card */
+/* Clean left-border style — inactive steps fade back */
 .step-content {
   pointer-events: auto;
   max-width: 360px;
-  margin-left: 4vw;
-  padding: 1.8rem 2rem;
-  background: var(--bg-surface);                                 /* solid fallback */
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  padding: 1.8rem 0 1.8rem 1.5rem;
+  background: transparent;
+  border-left: 2px solid var(--border);
+  border-radius: 0;
+  opacity: 0.2;
+  transition: opacity 0.5s ease, border-color 0.5s ease;
+}
+
+.step.active .step-content {
+  opacity: 1;
+  border-left-color: var(--accent);
 }
 
 .story-eyebrow {
@@ -1109,7 +1110,21 @@ footer {
     grid-template-columns: 1fr 1fr;
   }
 
-  /* Story scene: full-bleed works naturally on mobile */
+  /* Story scene: switch to full-bleed overlay on mobile */
+  .story-scene {
+    display: block;
+  }
+
+  .sticky-visual {
+    top: 0;
+    height: 100vh;
+  }
+
+  .scroll-steps {
+    margin-top: -100vh;
+    padding: 0 0 40vh;
+  }
+
   .step {
     min-height: 70vh;
     padding: 2.5rem 0;
@@ -1119,6 +1134,19 @@ footer {
     max-width: calc(100vw - 3rem);
     margin-left: 1.5rem;
     padding: 1.4rem 1.5rem;
+    background: var(--bg-surface);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-left-width: 1px;
+    border-radius: 4px;
+    opacity: 0.08;
+  }
+
+  .step.active .step-content {
+    opacity: 1;
+    border-left-color: var(--border);
   }
 
   .cases-header,
